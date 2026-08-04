@@ -44,7 +44,19 @@ Credentials are read **only from environment variables** — they are never stor
 | `TASTYTRADE_PASSWORD` | Yes | Your TastyTrade login password |
 | `TASTYTRADE_SANDBOX` | No | Set to `true` to use the certification environment (default: `false`) |
 
-### 3. Configure Claude Desktop
+### 3. Test the connection
+
+```bash
+python scripts/smoke_test.py
+```
+
+This runs every read-only tool (`get_accounts`, `get_balances`, `get_positions`,
+`get_orders`, `search_equities`, `get_market_metrics`, `get_option_chain`,
+`get_watchlists`) through the same `list_tools()`/`call_tool()` interface a
+real MCP client uses, and prints PASS/FAIL for each. It never places or
+cancels orders. Requires `.env` to be filled in (step 2).
+
+### 4. Configure Claude Desktop
 
 Add the following to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
