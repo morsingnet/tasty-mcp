@@ -29,20 +29,31 @@ pip install -e .
 uv pip install -e .
 ```
 
-### 2. Configure credentials
+### 2. OAuth2 setup
+
+This server authenticates with OAuth2 — a scoped, revocable refresh token —
+instead of your TastyTrade account password. Your actual login credentials
+are never entered anywhere in this project.
+
+1. Go to [my.tastytrade.com](https://my.tastytrade.com) → **Manage → My Profile → API → OAuth Applications**.
+2. Click **+ New OAuth Client**, give it any name, and set a redirect URI (e.g. `http://localhost`) — it's required but unused by the personal-grant flow below.
+3. Save the app, then note the **Client Secret** shown (it's only displayed once).
+4. Click **Manage** on the new app → **Create Grant** to issue yourself a **Personal Grant**. Copy the **Refresh Token** shown (also only displayed once).
+5. Copy the env template and fill in those two values:
 
 ```bash
 cp .env.example .env
-# Edit .env with your TastyTrade username and password
 ```
-
-Credentials are read **only from environment variables** — they are never stored in code:
 
 | Variable | Required | Description |
 |---|---|---|
-| `TASTYTRADE_USERNAME` | Yes | Your TastyTrade login username |
-| `TASTYTRADE_PASSWORD` | Yes | Your TastyTrade login password |
+| `TASTYTRADE_CLIENT_SECRET` | Yes | Client secret from the OAuth application |
+| `TASTYTRADE_REFRESH_TOKEN` | Yes | Refresh token from the personal grant |
 | `TASTYTRADE_SANDBOX` | No | Set to `true` to use the certification environment (default: `false`) |
+
+The refresh token doesn't expire on its own — if you ever want to cut off
+access, revoke the grant at my.tastytrade.com and generate a new one, no
+password change required.
 
 ### 3. Test the connection
 
@@ -66,8 +77,8 @@ Add the following to your Claude Desktop config (`~/Library/Application Support/
     "tastytrade": {
       "command": "mcp-tastytrade",
       "env": {
-        "TASTYTRADE_USERNAME": "your_username",
-        "TASTYTRADE_PASSWORD": "your_password"
+        "TASTYTRADE_CLIENT_SECRET": "your_client_secret",
+        "TASTYTRADE_REFRESH_TOKEN": "your_refresh_token"
       }
     }
   }
@@ -83,8 +94,8 @@ Or using `uv run` without installing:
       "command": "uv",
       "args": ["run", "--directory", "/absolute/path/to/mcp-tastytrade-server", "mcp-tastytrade"],
       "env": {
-        "TASTYTRADE_USERNAME": "your_username",
-        "TASTYTRADE_PASSWORD": "your_password"
+        "TASTYTRADE_CLIENT_SECRET": "your_client_secret",
+        "TASTYTRADE_REFRESH_TOKEN": "your_refresh_token"
       }
     }
   }
@@ -113,7 +124,9 @@ mcp-tastytrade
 
 ## Security
 
+- Authentication uses OAuth2 (client secret + refresh token) — your TastyTrade account password is never used or stored anywhere in this project.
 - Credentials are passed via environment variables only.
 - The `.env` file is in `.gitignore` and must never be committed.
-- Session tokens are held in memory for the lifetime of the server process and are deleted on shutdown.
+- Access tokens are short-lived (~15 minutes), held in memory only, and refreshed automatically.
+- To revoke access at any time, delete the grant at my.tastytrade.com — no password change needed.
 - Use `TASTYTRADE_SANDBOX=true` for testing — the certification environment uses separate accounts with no real money.
