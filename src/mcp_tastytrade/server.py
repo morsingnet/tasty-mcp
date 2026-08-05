@@ -332,7 +332,7 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
         elif name == "get_market_metrics":
             data = await client.get(
                 "/market-metrics",
-                params={"symbols[]": arguments["symbols"]},
+                params={"symbols": ",".join(arguments["symbols"])},
             )
             return _ok(data.get("data", data))
 
