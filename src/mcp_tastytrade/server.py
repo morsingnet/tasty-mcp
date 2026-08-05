@@ -2,11 +2,14 @@ import asyncio
 import json
 from typing import Any, Optional
 
+from dotenv import load_dotenv
 from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 
 from .client import TastyTradeClient
+
+load_dotenv()
 
 app = Server("tastytrade")
 _client: Optional[TastyTradeClient] = None
